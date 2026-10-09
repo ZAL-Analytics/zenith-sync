@@ -356,19 +356,19 @@ mod tests {
 
     const BASE: &str = r#"
         [[remote]]
-        name = "csh-data"
-        url = "smb://csh-dc.csh.local/Data$"
-        auth = "csh"
+        name = "example"
+        url = "smb://fileserver.example.com/files$"
+        auth = "example"
 
         [[mirror]]
         name = "data"
-        remote = "csh-data"
+        remote = "example"
         target = "mirror/data"
 
-        [auth.csh]
-        username = "arsalan"
-        domain = "CSH"
-        password_file = "csh.pass"
+        [auth.example]
+        username = "alice"
+        domain = "EXAMPLE"
+        password_file = "example.pass"
     "#;
 
     fn write(dir: &Path, name: &str, body: &str) -> PathBuf {
@@ -391,14 +391,14 @@ mod tests {
         let config = config.unwrap();
         let root = fs::canonicalize(dir.path()).unwrap();
 
-        let remote = config.remote("csh-data").unwrap();
-        assert_eq!(remote.url.host(), "csh-dc.csh.local");
-        assert_eq!(remote.url.share(), "Data$");
-        assert_eq!(remote.url.to_unc(), r"\\csh-dc.csh.local\Data$");
+        let remote = config.remote("example").unwrap();
+        assert_eq!(remote.url.host(), "fileserver.example.com");
+        assert_eq!(remote.url.share(), "files$");
+        assert_eq!(remote.url.to_unc(), r"\\fileserver.example.com\files$");
 
         let auth = config.auth(remote).unwrap();
-        assert_eq!(auth.principal(), r"CSH\arsalan");
-        assert!(matches!(&auth.password, Password::File(p) if *p == root.join("csh.pass")));
+        assert_eq!(auth.principal(), r"EXAMPLE\alice");
+        assert!(matches!(&auth.password, Password::File(p) if *p == root.join("example.pass")));
 
         assert_eq!(config.mirrors[0].target, root.join("mirror/data"));
     }
@@ -419,22 +419,22 @@ mod tests {
     fn includes_are_merged_relative_to_including_file() {
         let dir = tempfile::tempdir().unwrap();
         fs::create_dir(dir.path().join("conf.d")).unwrap();
-        write(dir.path(), "conf.d/csh.toml", BASE);
+        write(dir.path(), "conf.d/example.toml", BASE);
         let main = write(
             dir.path(),
             "config.toml",
             r#"
-            include = ["conf.d/csh.toml"]
+            include = ["conf.d/example.toml"]
 
             [[remote]]
             name = "other"
             url = "smb://other/share"
-            auth = "csh"
+            auth = "example"
         "#,
         );
         let config = Config::load(&main).unwrap();
         let names: Vec<_> = config.remotes.iter().map(|r| r.name.as_str()).collect();
-        assert_eq!(names, ["other", "csh-data"]);
+        assert_eq!(names, ["other", "example"]);
         let root = fs::canonicalize(dir.path()).unwrap();
         assert_eq!(config.mirrors[0].target, root.join("conf.d/mirror/data"));
     }
@@ -464,9 +464,9 @@ mod tests {
             r#"
             include = ["base.toml"]
             [[remote]]
-            name = "csh-data"
+            name = "example"
             url = "smb://x/y"
-            auth = "csh"
+            auth = "example"
         "#,
         );
         let err = Config::load(&main).unwrap_err();
@@ -482,7 +482,7 @@ mod tests {
             "config.toml",
             r#"
             include = ["base.toml"]
-            [auth.csh]
+            [auth.example]
             username = "x"
             password_env = "X"
         "#,
@@ -522,7 +522,7 @@ mod tests {
 
     #[test]
     fn remote_name_with_colon_is_rejected() {
-        let (_dir, config) = load(&BASE.replace(r#"name = "csh-data""#, r#"name = "a:b""#));
+        let (_dir, config) = load(&BASE.replace(r#"name = "example""#, r#"name = "a:b""#));
         assert!(matches!(config.unwrap_err(), Error::InvalidName { .. }));
     }
 

@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn normalizes_empty_and_dot_components() {
-        assert_eq!(path("Engineering//a/./b/").as_str(), "Engineering/a/b");
+        assert_eq!(path("docs//a/./b/").as_str(), "docs/a/b");
         assert!(path("").is_root());
         assert!(path(".").is_root());
     }
@@ -252,7 +252,7 @@ mod tests {
     #[test]
     fn entry_display() {
         let entry = Entry {
-            path: path("Engineering/report.pdf"),
+            path: path("docs/report.pdf"),
             size: 1234,
             mtime: UNIX_EPOCH,
             file_id: FileId(7),

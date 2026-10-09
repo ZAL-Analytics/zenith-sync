@@ -9,16 +9,16 @@ fn loads_split_config_and_resolves_password_file() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     fs::create_dir(root.join("secrets")).unwrap();
-    let pass = root.join("secrets/csh.pass");
+    let pass = root.join("secrets/example.pass");
     fs::write(&pass, "s3cret\n").unwrap();
     fs::set_permissions(&pass, fs::Permissions::from_mode(0o600)).unwrap();
     fs::write(
         root.join("auth.toml"),
         r#"
-        [auth.csh]
-        username = "arsalan"
-        domain = "CSH"
-        password_file = "secrets/csh.pass"
+        [auth.example]
+        username = "alice"
+        domain = "EXAMPLE"
+        password_file = "secrets/example.pass"
         "#,
     )
     .unwrap();
@@ -29,16 +29,16 @@ fn loads_split_config_and_resolves_password_file() {
         include = ["auth.toml"]
 
         [[remote]]
-        name = "csh-data"
-        url = "smb://csh-dc.csh.local/Data$"
-        auth = "csh"
+        name = "example"
+        url = "smb://fileserver.example.com/files$"
+        auth = "example"
         "#,
     )
     .unwrap();
 
     let config = Config::load(&main).unwrap();
-    let remote = config.remote("csh-data").unwrap();
+    let remote = config.remote("example").unwrap();
     let auth = config.auth(remote).unwrap();
-    assert_eq!(auth.principal(), r"CSH\arsalan");
+    assert_eq!(auth.principal(), r"EXAMPLE\alice");
     assert_eq!(auth.password.resolve().unwrap().expose_secret(), "s3cret");
 }

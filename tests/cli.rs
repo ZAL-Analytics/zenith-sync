@@ -5,13 +5,13 @@ use std::process::{Command, Output};
 
 const CONFIG: &str = r#"
 [[remote]]
-name = "csh-data"
-url = "smb://127.0.0.1/Data$"
-auth = "csh"
+name = "example"
+url = "smb://127.0.0.1/files$"
+auth = "example"
 
-[auth.csh]
-username = "arsalan"
-password_file = "csh.pass"
+[auth.example]
+username = "alice"
+password_file = "example.pass"
 "#;
 
 fn run(config_dir: &Path, args: &[&str]) -> Output {
@@ -26,7 +26,7 @@ fn run(config_dir: &Path, args: &[&str]) -> Output {
 fn setup(pass_mode: u32) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     fs::write(dir.path().join("config.toml"), CONFIG).unwrap();
-    let pass = dir.path().join("csh.pass");
+    let pass = dir.path().join("example.pass");
     fs::write(&pass, "hunter2\n").unwrap();
     fs::set_permissions(&pass, fs::Permissions::from_mode(pass_mode)).unwrap();
     dir
@@ -39,7 +39,7 @@ fn stderr(output: &Output) -> String {
 #[test]
 fn unknown_remote_fails() {
     let dir = setup(0o600);
-    let output = run(dir.path(), &["ls", "nope:Engineering"]);
+    let output = run(dir.path(), &["ls", "nope:docs"]);
     assert!(!output.status.success());
     assert!(stderr(&output).contains("unknown remote `nope`"));
 }
@@ -47,7 +47,7 @@ fn unknown_remote_fails() {
 #[test]
 fn target_without_colon_fails() {
     let dir = setup(0o600);
-    let output = run(dir.path(), &["ls", "csh-data"]);
+    let output = run(dir.path(), &["ls", "example"]);
     assert!(!output.status.success());
     assert!(stderr(&output).contains("expected REMOTE:PATH"));
 }
@@ -55,7 +55,7 @@ fn target_without_colon_fails() {
 #[test]
 fn insecure_password_file_fails_without_leaking_password() {
     let dir = setup(0o644);
-    let output = run(dir.path(), &["check", "csh-data"]);
+    let output = run(dir.path(), &["check", "example"]);
     assert!(!output.status.success());
     let err = stderr(&output);
     assert!(err.contains("must not be accessible by group or others"));
@@ -65,7 +65,7 @@ fn insecure_password_file_fails_without_leaking_password() {
 #[test]
 fn missing_config_fails() {
     let dir = tempfile::tempdir().unwrap();
-    let output = run(dir.path(), &["check", "csh-data"]);
+    let output = run(dir.path(), &["check", "example"]);
     assert!(!output.status.success());
     assert!(stderr(&output).contains("cannot load config"));
 }

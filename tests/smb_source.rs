@@ -18,7 +18,7 @@ async fn connect() -> SmbSource {
         .unwrap_or_else(|| Config::default_path().unwrap());
     let config = Config::load(&config_path).unwrap();
     let remote = config
-        .remote(&var_or("ZS_TEST_REMOTE", "csh-data"))
+        .remote(&std::env::var("ZS_TEST_REMOTE").expect("set ZS_TEST_REMOTE"))
         .unwrap();
     let auth = config.auth(remote).unwrap();
     let password = auth.password.resolve().unwrap();
@@ -37,7 +37,7 @@ async fn lists_and_stats_share_read_only() {
     let root = source.stat(&RemotePath::root()).await.unwrap();
     assert!(root.is_dir);
 
-    let path: RemotePath = var_or("ZS_TEST_PATH", "Engineering").parse().unwrap();
+    let path: RemotePath = var_or("ZS_TEST_PATH", "").parse().unwrap();
     let entries = source.list(&path).await.unwrap();
     assert!(!entries.is_empty(), "{path} is empty");
 

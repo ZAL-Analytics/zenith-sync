@@ -83,15 +83,15 @@ mod tests {
 
     #[test]
     fn splits_remote_and_path() {
-        let (remote, path) = split_target("csh-data:Engineering/x").unwrap();
-        assert_eq!(remote, "csh-data");
-        assert_eq!(path.as_str(), "Engineering/x");
-        assert!(split_target("csh-data:").unwrap().1.is_root());
+        let (remote, path) = split_target("example:docs/x").unwrap();
+        assert_eq!(remote, "example");
+        assert_eq!(path.as_str(), "docs/x");
+        assert!(split_target("example:").unwrap().1.is_root());
     }
 
     #[test]
     fn rejects_target_without_colon_or_with_bad_path() {
-        assert!(split_target("csh-data").is_err());
-        assert!(split_target("csh-data:../x").is_err());
+        assert!(split_target("example").is_err());
+        assert!(split_target("example:../x").is_err());
     }
 }
