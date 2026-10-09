@@ -1,0 +1,25 @@
+[package]
+name = "zenith-sync"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Arsalan Anwari"]
+description = "A Git-inspired, read-only sync tool that mirrors network shares to local systems. Fast, immutable, and secure data streaming."
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/ZAL-Analytics/zenith-sync"
+homepage = "https://github.com/ZAL-Analytics/zenith-sync"
+documentation = "https://docs.rs/zenith-sync"
+keywords = ["sync", "mirror", "network-share", "backup", "cli"]
+categories = ["command-line-utilities", "filesystem"]
+include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
+
+[lib]
+name = "zenith_sync"
+path = "src/lib.rs"
+
+[[bin]]
+name = "zenith-sync"
+path = "src/main.rs"
+
+[dependencies]
